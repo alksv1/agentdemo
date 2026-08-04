@@ -6,6 +6,9 @@ const nextConfig: NextConfig = {
 
 export default nextConfig;
 
-// added by create cloudflare to enable calling `getCloudflareContext()` in `next dev`
+// Enable Cloudflare bindings only in `next dev`. Initializing the proxy during
+// `next build` would unnecessarily require remote Workers AI authentication.
 import { initOpenNextCloudflareForDev } from "@opennextjs/cloudflare";
-initOpenNextCloudflareForDev();
+if (process.env.NODE_ENV === "development") {
+	initOpenNextCloudflareForDev();
+}

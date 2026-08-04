@@ -4,16 +4,49 @@
  */
 {
 	"$schema": "node_modules/wrangler/config-schema.json",
-	"name": "agentdemo",
-	"main": ".open-next/worker.js",
-	"compatibility_date": "2025-10-08",
+	"name": "northstar-agent",
+	"main": "custom-worker.ts",
+	"compatibility_date": "2026-08-04",
 	"compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+	"ai": {
+		"binding": "AI"
+	},
+	"durable_objects": {
+		"bindings": [
+			{
+				"name": "GoalCoachV2",
+				"class_name": "GoalCoachV2"
+			}
+		]
+	},
+	"migrations": [
+		{
+			"tag": "v1",
+			"new_sqlite_classes": ["GoalCoach"]
+		},
+		{
+			"tag": "v2-prelaunch-data-reset",
+			"deleted_classes": ["GoalCoach"]
+		},
+		{
+			"tag": "v3-goal-coach-v2",
+			"new_sqlite_classes": ["GoalCoachV2"]
+		}
+	],
 	"assets": {
 		"binding": "ASSETS",
 		"directory": ".open-next/assets"
 	},
 	"observability": {
-		"enabled": true
+		"enabled": true,
+		"logs": {
+			"enabled": true,
+			"head_sampling_rate": 1
+		},
+		"traces": {
+			"enabled": true,
+			"head_sampling_rate": 0.1
+		}
 	},
 	"upload_source_maps": true
 }

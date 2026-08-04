@@ -1,6 +1,7 @@
 {
-	"name": "agentdemo",
-	"description": "Build a full-stack web application with Next.js.",
+	"name": "northstar-agent",
+	"version": "1.0.0",
+	"description": "Northstar is a stateful AI goal-planning and execution coach built on Cloudflare Agents.",
 	"cloudflare": {
 		"label": "Next.js Framework Starter",
 		"products": [
@@ -12,32 +13,50 @@
 		"publish": true
 	},
 	"dependencies": {
-		"@opennextjs/cloudflare": "1.14.0",
-		"next": "16.0.7",
-		"react": "19.2.1",
-		"react-dom": "19.2.1"
+		"@cloudflare/ai-chat": "^0.10.1",
+		"@opennextjs/cloudflare": "^1.20.2",
+		"agents": "^0.20.1",
+		"ai": "^7.0.50",
+		"lucide-react": "^1.28.0",
+		"next": "^16.3.0",
+		"react": "^19.2.8",
+		"react-dom": "^19.2.8",
+		"react-markdown": "^10.1.0",
+		"remark-gfm": "^4.0.1",
+		"workers-ai-provider": "^4.0.0",
+		"zod": "^4.4.3"
 	},
 	"devDependencies": {
-		"@eslint/eslintrc": "3",
-		"@tailwindcss/postcss": "4.1.17",
+		"@cloudflare/workers-types": "^5.20260804.1",
+		"@eslint/eslintrc": "^3.3.6",
+		"@tailwindcss/postcss": "^4.3.3",
+		"@testing-library/jest-dom": "^7.0.0",
+		"@testing-library/react": "^16.3.2",
+		"@testing-library/user-event": "^14.6.3",
 		"@types/node": "24.10.1",
-		"@types/react": "19.2.7",
-		"@types/react-dom": "19.2.3",
+		"@types/react": "^19.2.18",
+		"@types/react-dom": "^19.2.4",
 		"eslint": "9.39.2",
-		"eslint-config-next": "16.0.7",
-		"tailwindcss": "4.1.17",
+		"eslint-config-next": "^16.3.0",
+		"jsdom": "^30.0.1",
+		"tailwindcss": "^4.3.3",
 		"typescript": "5.9.3",
-		"wrangler": "4.88.0"
+		"vitest": "^4.1.10",
+		"wrangler": "^4.118.0"
 	},
 	"private": true,
 	"scripts": {
-		"build": "next build",
+		"build": "next build --webpack",
+		"build:cloudflare": "opennextjs-cloudflare build",
 		"cf-typegen": "wrangler types --env-interface CloudflareEnv env.d.ts",
-		"check": "npm run build && tsc",
-		"deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
+		"check": "npm run lint && npm run typecheck && npm run test:run && npm run build:cloudflare",
+		"deploy": "opennextjs-cloudflare build && OPEN_NEXT_DEPLOY=true wrangler deploy",
 		"dev": "next dev",
-		"lint": "next lint",
-		"preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
-		"start": "next start"
+		"lint": "eslint .",
+		"preview": "opennextjs-cloudflare build && OPEN_NEXT_DEPLOY=true wrangler dev",
+		"start": "next start",
+		"test": "vitest",
+		"test:run": "vitest run",
+		"typecheck": "tsc --noEmit"
 	}
 }
