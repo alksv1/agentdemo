@@ -1,6 +1,7 @@
 @import "tailwindcss";
 
 :root {
+	color-scheme: light;
 	--ink: #19221f;
 	--muted: #69736e;
 	--faint: #8d9691;
@@ -14,6 +15,116 @@
 	--amber: #c47b3b;
 	--amber-soft: #fff4e9;
 	--shadow: 0 18px 55px rgb(25 34 31 / 8%);
+	--on-accent: #fff;
+	--surface: #fff;
+	--surface-raised: #fff;
+	--surface-subtle: #f7f9f6;
+	--surface-muted: #edf0ed;
+	--sidebar: #f1f3ef;
+	--hover: rgb(255 255 255 / 60%);
+	--overlay: rgb(255 255 255 / 96%);
+	--header: rgb(255 255 255 / 82%);
+	--conversation-wash: rgb(255 255 255 / 86%);
+	--conversation-glow: #e8f0ea;
+	--user-bubble: #edf1ee;
+	--code-block: #26332c;
+	--composer-solid: #fff;
+	--composer-clear: rgb(255 255 255 / 0%);
+	--success-soft: #eef5f0;
+	--warning-soft: #fff8ed;
+	--danger-soft: #fff2ef;
+	--scrollbar: #d9ded9;
+	--ring-track: #e7ece8;
+	--success-ink: #536d60;
+	--warning-ink: #89643f;
+	--danger-ink: #9b594d;
+	--amber-ink: #795b42;
+	--disabled: #cbd3ce;
+	--stop: #7d5c53;
+}
+
+:root[data-theme="dark"] {
+	color-scheme: dark;
+	--ink: #edf3ef;
+	--muted: #a8b3ad;
+	--faint: #7f8b85;
+	--line: #2b3731;
+	--paper: #101512;
+	--panel: #161d19;
+	--moss: #79b394;
+	--moss-dark: #9ac9af;
+	--moss-soft: #20382d;
+	--amber: #d79a61;
+	--amber-soft: #33261b;
+	--shadow: 0 18px 55px rgb(0 0 0 / 28%);
+	--surface: #19211d;
+	--surface-raised: #1d2722;
+	--surface-subtle: #171f1b;
+	--surface-muted: #25302a;
+	--sidebar: #141a17;
+	--hover: rgb(125 171 146 / 10%);
+	--overlay: rgb(25 33 29 / 96%);
+	--header: rgb(16 22 19 / 86%);
+	--conversation-wash: rgb(16 21 18 / 90%);
+	--conversation-glow: #21372b;
+	--user-bubble: #25312b;
+	--code-block: #0b100e;
+	--composer-solid: #111713;
+	--composer-clear: rgb(17 23 19 / 0%);
+	--success-soft: #1c3026;
+	--warning-soft: #34291d;
+	--danger-soft: #35231f;
+	--scrollbar: #35423b;
+	--ring-track: #303d36;
+	--success-ink: #9bc2ad;
+	--warning-ink: #d8ab73;
+	--danger-ink: #e6a094;
+	--amber-ink: #e2b987;
+	--disabled: #39453f;
+	--stop: #875f56;
+}
+
+@media (prefers-color-scheme: dark) {
+	:root:not([data-theme]) {
+		color-scheme: dark;
+		--ink: #edf3ef;
+		--muted: #a8b3ad;
+		--faint: #7f8b85;
+		--line: #2b3731;
+		--paper: #101512;
+		--panel: #161d19;
+		--moss: #79b394;
+		--moss-dark: #9ac9af;
+		--moss-soft: #20382d;
+		--amber: #d79a61;
+		--amber-soft: #33261b;
+		--shadow: 0 18px 55px rgb(0 0 0 / 28%);
+		--surface: #19211d;
+		--surface-raised: #1d2722;
+		--surface-subtle: #171f1b;
+		--surface-muted: #25302a;
+		--sidebar: #141a17;
+		--hover: rgb(125 171 146 / 10%);
+		--overlay: rgb(25 33 29 / 96%);
+		--header: rgb(16 22 19 / 86%);
+		--conversation-wash: rgb(16 21 18 / 90%);
+		--conversation-glow: #21372b;
+		--user-bubble: #25312b;
+		--code-block: #0b100e;
+		--composer-solid: #111713;
+		--composer-clear: rgb(17 23 19 / 0%);
+		--success-soft: #1c3026;
+		--warning-soft: #34291d;
+		--danger-soft: #35231f;
+		--scrollbar: #35423b;
+		--ring-track: #303d36;
+		--success-ink: #9bc2ad;
+		--warning-ink: #d8ab73;
+		--danger-ink: #e6a094;
+		--amber-ink: #e2b987;
+		--disabled: #39453f;
+		--stop: #875f56;
+	}
 }
 
 * {
@@ -62,7 +173,7 @@ textarea:focus-visible {
 	gap: 18px;
 	min-height: 100vh;
 	background:
-		radial-gradient(circle at 50% 45%, #edf3ee 0, transparent 32%),
+		radial-gradient(circle at 50% 45%, var(--moss-soft) 0, transparent 32%),
 		var(--paper);
 	text-align: center;
 }
@@ -79,7 +190,7 @@ textarea:focus-visible {
 	width: 54px;
 	height: 54px;
 	margin: auto;
-	border: 1px solid #dce5de;
+	border: 1px solid var(--line);
 	border-radius: 50%;
 	box-shadow: 0 0 0 10px rgb(49 91 72 / 4%);
 	animation: breathe 1.6s ease-in-out infinite;
@@ -109,7 +220,7 @@ textarea:focus-visible {
 	height: 100dvh;
 	overflow-y: auto;
 	padding: 27px 18px 18px;
-	background: #f1f3ef;
+	background: var(--sidebar);
 	border-right: 1px solid var(--line);
 }
 
@@ -140,7 +251,7 @@ textarea:focus-visible {
 }
 
 .brand-mark small {
-	color: #7f8983;
+	color: var(--faint);
 	font-size: 7px;
 	font-weight: 700;
 	letter-spacing: 1.5px;
@@ -151,7 +262,7 @@ textarea:focus-visible {
 	place-items: center;
 	width: 32px;
 	height: 32px;
-	color: #fff;
+	color: var(--on-accent);
 	background: var(--moss);
 	border-radius: 10px 10px 10px 3px;
 	box-shadow: 0 6px 18px rgb(49 91 72 / 20%);
@@ -164,7 +275,7 @@ textarea:focus-visible {
 	gap: 9px;
 	width: 100%;
 	height: 42px;
-	color: #fff;
+	color: var(--on-accent);
 	background: var(--moss);
 	border: 0;
 	border-radius: 10px;
@@ -195,7 +306,7 @@ textarea:focus-visible {
 	width: 100%;
 	height: 42px;
 	padding: 0 12px;
-	color: #69736e;
+	color: var(--muted);
 	background: transparent;
 	border: 0;
 	border-radius: 9px;
@@ -209,12 +320,12 @@ textarea:focus-visible {
 
 .nav-item:hover {
 	color: var(--ink);
-	background: rgb(255 255 255 / 60%);
+	background: var(--hover);
 }
 
 .nav-item.active {
 	color: var(--moss-dark);
-	background: #fff;
+	background: var(--surface-raised);
 	box-shadow: 0 4px 18px rgb(34 54 45 / 5%);
 }
 
@@ -234,8 +345,8 @@ textarea:focus-visible {
 	height: 20px;
 	margin-left: auto;
 	padding: 0 5px;
-	color: #69766f;
-	background: #e6e9e5;
+	color: var(--muted);
+	background: var(--surface-muted);
 	border-radius: 7px;
 	font-size: 10px;
 	font-weight: 700;
@@ -244,8 +355,8 @@ textarea:focus-visible {
 .goal-mini-card {
 	margin-top: 32px;
 	padding: 15px;
-	background: #fff;
-	border: 1px solid #e1e6e1;
+	background: var(--surface-raised);
+	border: 1px solid var(--line);
 	border-radius: 13px;
 	box-shadow: 0 10px 30px rgb(31 52 43 / 4%);
 }
@@ -254,8 +365,8 @@ textarea:focus-visible {
 	display: flex;
 	align-items: flex-start;
 	gap: 10px;
-	color: #6f7a74;
-	background: rgb(255 255 255 / 54%);
+	color: var(--muted);
+	background: color-mix(in srgb, var(--surface) 62%, transparent);
 	border-style: dashed;
 	box-shadow: none;
 }
@@ -280,7 +391,7 @@ textarea:focus-visible {
 }
 
 .eyebrow-row {
-	color: #929a95;
+	color: var(--faint);
 	font-size: 9px;
 	font-weight: 750;
 	letter-spacing: 1.1px;
@@ -290,7 +401,7 @@ textarea:focus-visible {
 .live-dot {
 	position: relative;
 	padding-left: 10px;
-	color: #63806f;
+	color: var(--moss);
 	letter-spacing: 0;
 }
 
@@ -315,7 +426,7 @@ textarea:focus-visible {
 .mini-progress-track {
 	height: 4px;
 	overflow: hidden;
-	background: #edf0ed;
+	background: var(--surface-muted);
 	border-radius: 99px;
 }
 
@@ -329,7 +440,7 @@ textarea:focus-visible {
 
 .goal-mini-meta {
 	margin-top: 8px;
-	color: #8b948f;
+	color: var(--faint);
 	font-size: 9px;
 }
 
@@ -345,8 +456,8 @@ textarea:focus-visible {
 	bottom: calc(100% + 8px);
 	left: 0;
 	padding: 10px;
-	background: rgb(255 255 255 / 96%);
-	border: 1px solid #dfe5df;
+	background: var(--overlay);
+	border: 1px solid var(--line);
 	border-radius: 13px;
 	box-shadow: 0 18px 45px rgb(25 34 31 / 15%);
 	backdrop-filter: blur(14px);
@@ -448,8 +559,8 @@ textarea:focus-visible {
 	height: 30px;
 	padding: 0 8px;
 	color: var(--ink);
-	background: #f6f8f5;
-	border: 1px solid #dfe5df;
+	background: var(--surface-subtle);
+	border: 1px solid var(--line);
 	border-radius: 7px;
 	font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
 	font-size: 8px;
@@ -457,7 +568,7 @@ textarea:focus-visible {
 
 .workspace-import button {
 	padding: 0 9px;
-	color: #fff;
+	color: var(--on-accent);
 	background: var(--moss);
 	border: 0;
 	border-radius: 7px;
@@ -467,7 +578,7 @@ textarea:focus-visible {
 
 .workspace-import p {
 	margin: 5px 0 0;
-	color: #a65347;
+	color: var(--danger-ink);
 	font-size: 8px;
 }
 
@@ -505,7 +616,7 @@ textarea:focus-visible {
 }
 
 .workspace-chip:hover {
-	background: rgb(255 255 255 / 68%);
+	background: var(--hover);
 }
 
 .avatar {
@@ -513,7 +624,7 @@ textarea:focus-visible {
 	place-items: center;
 	width: 32px;
 	height: 32px;
-	color: #fff;
+	color: var(--on-accent);
 	background: #9a765b;
 	border-radius: 9px;
 	font-family: Georgia, serif;
@@ -554,8 +665,8 @@ textarea:focus-visible {
 	height: 100dvh;
 	overflow: hidden;
 	background:
-		linear-gradient(rgb(255 255 255 / 86%), rgb(255 255 255 / 86%)),
-		radial-gradient(circle at 10% 10%, #e8f0ea 0, transparent 32%);
+		linear-gradient(var(--conversation-wash), var(--conversation-wash)),
+		radial-gradient(circle at 10% 10%, var(--conversation-glow) 0, transparent 32%);
 }
 
 .conversation-header {
@@ -563,7 +674,7 @@ textarea:focus-visible {
 	align-items: center;
 	justify-content: space-between;
 	padding: 0 24px;
-	background: rgb(255 255 255 / 82%);
+	background: var(--header);
 	border-bottom: 1px solid var(--line);
 	backdrop-filter: blur(14px);
 	z-index: 2;
@@ -581,7 +692,7 @@ textarea:focus-visible {
 	place-items: center;
 	color: var(--moss);
 	background: var(--moss-soft);
-	border: 1px solid #d8e5dc;
+	border: 1px solid color-mix(in srgb, var(--moss) 24%, var(--line));
 }
 
 .coach-avatar {
@@ -627,13 +738,78 @@ textarea:focus-visible {
 	gap: 7px;
 }
 
+.theme-picker {
+	position: relative;
+}
+
+.theme-picker > summary {
+	list-style: none;
+}
+
+.theme-picker > summary::-webkit-details-marker {
+	display: none;
+}
+
+.theme-picker[open] > summary {
+	color: var(--moss);
+	background: var(--moss-soft);
+	border-color: color-mix(in srgb, var(--moss) 28%, transparent);
+}
+
+.theme-menu {
+	position: absolute;
+	top: calc(100% + 8px);
+	right: 0;
+	display: grid;
+	gap: 3px;
+	width: 146px;
+	padding: 6px;
+	background: var(--overlay);
+	border: 1px solid var(--line);
+	border-radius: 11px;
+	box-shadow: var(--shadow);
+	backdrop-filter: blur(14px);
+	z-index: 8;
+}
+
+.theme-menu button {
+	display: grid;
+	grid-template-columns: 18px 1fr 14px;
+	align-items: center;
+	gap: 7px;
+	width: 100%;
+	height: 34px;
+	padding: 0 8px;
+	color: var(--muted);
+	background: transparent;
+	border: 0;
+	border-radius: 7px;
+	font-size: 10px;
+	text-align: left;
+	cursor: pointer;
+}
+
+.theme-menu button:hover,
+.theme-menu button.active {
+	color: var(--ink);
+	background: var(--moss-soft);
+}
+
+.theme-menu button.active {
+	color: var(--moss-dark);
+}
+
+.theme-menu button > svg:last-child {
+	justify-self: end;
+}
+
 .icon-button {
 	display: grid;
 	place-items: center;
 	width: 34px;
 	height: 34px;
 	padding: 0;
-	color: #7e8782;
+	color: var(--muted);
 	background: transparent;
 	border: 1px solid transparent;
 	border-radius: 9px;
@@ -642,8 +818,8 @@ textarea:focus-visible {
 
 .icon-button:hover {
 	color: var(--ink);
-	background: #f5f6f4;
-	border-color: #e7e9e6;
+	background: var(--hover);
+	border-color: var(--line);
 }
 
 .message-scroller {
@@ -652,7 +828,7 @@ textarea:focus-visible {
 	overflow-y: auto;
 	overscroll-behavior: contain;
 	scrollbar-gutter: stable;
-	scrollbar-color: #d9ded9 transparent;
+	scrollbar-color: var(--scrollbar) transparent;
 }
 
 .message-column {
@@ -675,7 +851,7 @@ textarea:focus-visible {
 	align-items: center;
 	gap: 8px;
 	margin-bottom: 13px;
-	color: #74907f;
+	color: var(--moss);
 	font-size: 9px;
 	font-weight: 760;
 	letter-spacing: 1.6px;
@@ -685,7 +861,7 @@ textarea:focus-visible {
 .welcome-kicker span {
 	width: 20px;
 	height: 1px;
-	background: #74907f;
+	background: var(--moss);
 }
 
 .welcome-state h2 {
@@ -717,8 +893,8 @@ textarea:focus-visible {
 	align-content: space-between;
 	min-height: 120px;
 	padding: 15px;
-	color: #3e4944;
-	background: #fff;
+	color: var(--ink);
+	background: var(--surface-raised);
 	border: 1px solid var(--line);
 	border-radius: 12px;
 	font-size: 11px;
@@ -729,28 +905,28 @@ textarea:focus-visible {
 }
 
 .starter-grid button:hover {
-	border-color: #bdcec3;
+	border-color: color-mix(in srgb, var(--moss) 45%, var(--line));
 	box-shadow: var(--shadow);
 	transform: translateY(-2px);
 }
 
 .starter-grid button span {
 	grid-column: 1 / -1;
-	color: #a2aaa5;
+	color: var(--faint);
 	font-family: Georgia, serif;
 	font-size: 10px;
 }
 
 .starter-grid button svg {
 	align-self: end;
-	color: #809087;
+	color: var(--muted);
 }
 
 .capability-row {
 	display: flex;
 	gap: 22px;
 	margin-top: 22px;
-	color: #8a938e;
+	color: var(--faint);
 	font-size: 9px;
 }
 
@@ -793,13 +969,13 @@ textarea:focus-visible {
 
 .user-message .message-content {
 	padding: 11px 14px;
-	background: #edf1ee;
-	border: 1px solid #e1e6e2;
+	background: var(--user-bubble);
+	border: 1px solid var(--line);
 	border-radius: 14px 14px 4px 14px;
 }
 
 .editing-message .message-content {
-	border-color: #91ac9c;
+	border-color: color-mix(in srgb, var(--moss) 56%, var(--line));
 	box-shadow: 0 0 0 3px rgb(49 91 72 / 7%);
 }
 
@@ -829,7 +1005,7 @@ textarea:focus-visible {
 	gap: 4px;
 	height: 24px;
 	padding: 0 7px;
-	color: #7c8781;
+	color: var(--muted);
 	background: transparent;
 	border: 1px solid transparent;
 	border-radius: 7px;
@@ -839,8 +1015,8 @@ textarea:focus-visible {
 
 .message-actions button:hover:not(:disabled) {
 	color: var(--ink);
-	background: #fff;
-	border-color: #dce2dd;
+	background: var(--surface-raised);
+	border-color: var(--line);
 }
 
 .message-actions button:disabled {
@@ -849,9 +1025,9 @@ textarea:focus-visible {
 }
 
 .message-actions .confirm-retract {
-	color: #9a594f;
-	background: #fff4f1;
-	border-color: #efd8d2;
+	color: var(--danger-ink);
+	background: var(--danger-soft);
+	border-color: color-mix(in srgb, var(--danger-ink) 32%, var(--line));
 }
 
 .message-actions .cancel-retract {
@@ -935,13 +1111,13 @@ textarea:focus-visible {
 
 .markdown-message blockquote {
 	padding: 2px 0 2px 12px;
-	color: #64736b;
-	border-left: 3px solid #b9c9bf;
+	color: var(--muted);
+	border-left: 3px solid color-mix(in srgb, var(--moss) 38%, var(--line));
 }
 
 .markdown-message code {
 	padding: 2px 5px;
-	background: #eef2ef;
+	background: var(--surface-muted);
 	border-radius: 5px;
 	font-family: var(--font-geist-mono), ui-monospace, monospace;
 	font-size: 0.9em;
@@ -952,7 +1128,7 @@ textarea:focus-visible {
 	padding: 13px 15px;
 	overflow-x: auto;
 	color: #e8eee9;
-	background: #26332c;
+	background: var(--code-block);
 	border-radius: 10px;
 	line-height: 1.6;
 }
@@ -965,9 +1141,9 @@ textarea:focus-visible {
 }
 
 .markdown-message a {
-	color: #326b52;
+	color: var(--moss-dark);
 	text-decoration: underline;
-	text-decoration-color: #a9c3b5;
+	text-decoration-color: color-mix(in srgb, var(--moss) 50%, transparent);
 	text-underline-offset: 3px;
 }
 
@@ -987,18 +1163,18 @@ textarea:focus-visible {
 .markdown-message td {
 	min-width: 90px;
 	padding: 7px 9px;
-	border: 1px solid #dce3de;
+	border: 1px solid var(--line);
 	text-align: left;
 }
 
 .markdown-message th {
-	background: #f2f5f3;
+	background: var(--surface-muted);
 	font-weight: 680;
 }
 
 .markdown-message hr {
 	border: 0;
-	border-top: 1px solid #dfe5e1;
+	border-top: 1px solid var(--line);
 }
 
 .tool-card {
@@ -1008,8 +1184,8 @@ textarea:focus-visible {
 	min-width: 250px;
 	margin: 8px 0;
 	padding: 10px 12px;
-	background: #f7f9f6;
-	border: 1px solid #e1e7e2;
+	background: var(--surface-subtle);
+	border: 1px solid var(--line);
 	border-radius: 10px;
 }
 
@@ -1019,7 +1195,7 @@ textarea:focus-visible {
 	width: 26px;
 	height: 26px;
 	color: var(--moss);
-	background: #e6efe9;
+	background: var(--moss-soft);
 	border-radius: 8px;
 }
 
@@ -1041,8 +1217,8 @@ textarea:focus-visible {
 
 .tool-error > span,
 .tool-denied > span {
-	color: #a2594f;
-	background: #f4e8e5;
+	color: var(--danger-ink);
+	background: var(--danger-soft);
 }
 
 .approval-card {
@@ -1052,7 +1228,7 @@ textarea:focus-visible {
 	margin: 10px 0;
 	padding: 15px;
 	background: var(--amber-soft);
-	border: 1px solid #f0d8bd;
+	border: 1px solid color-mix(in srgb, var(--amber) 42%, var(--line));
 	border-radius: 12px;
 }
 
@@ -1062,8 +1238,8 @@ textarea:focus-visible {
 	flex: 0 0 auto;
 	width: 34px;
 	height: 34px;
-	color: #9b642f;
-	background: #fff;
+	color: var(--warning-ink);
+	background: var(--surface-raised);
 	border-radius: 10px;
 }
 
@@ -1073,7 +1249,7 @@ textarea:focus-visible {
 
 .approval-card p {
 	margin: 4px 0 12px;
-	color: #765f4c;
+	color: var(--amber-ink);
 	font-size: 10px;
 	line-height: 1.6;
 }
@@ -1086,9 +1262,9 @@ textarea:focus-visible {
 .approval-actions button {
 	height: 29px;
 	padding: 0 11px;
-	color: #795b42;
+	color: var(--amber-ink);
 	background: transparent;
-	border: 1px solid #ddc3a8;
+	border: 1px solid color-mix(in srgb, var(--amber) 42%, var(--line));
 	border-radius: 7px;
 	font-size: 9px;
 	font-weight: 650;
@@ -1096,9 +1272,9 @@ textarea:focus-visible {
 }
 
 .approval-actions button.approve {
-	color: #fff;
-	background: #9b642f;
-	border-color: #9b642f;
+	color: var(--on-accent);
+	background: var(--amber);
+	border-color: var(--amber);
 }
 
 .thinking-row {
@@ -1114,15 +1290,15 @@ textarea:focus-visible {
 	gap: 4px;
 	height: 34px;
 	padding: 0 12px;
-	background: #f4f6f3;
-	border: 1px solid #e5e9e5;
+	background: var(--surface-subtle);
+	border: 1px solid var(--line);
 	border-radius: 12px 12px 12px 3px;
 }
 
 .thinking-pill > span {
 	width: 4px;
 	height: 4px;
-	background: #7f8e86;
+	background: var(--muted);
 	border-radius: 50%;
 	animation: thinking 1.2s infinite ease-in-out;
 }
@@ -1137,13 +1313,17 @@ textarea:focus-visible {
 
 .thinking-pill small {
 	margin-left: 5px;
-	color: #89928d;
+	color: var(--faint);
 	font-size: 8px;
 }
 
 .composer-wrap {
 	padding: 12px 28px 16px;
-	background: linear-gradient(to top, #fff 80%, rgb(255 255 255 / 0%));
+	background: linear-gradient(
+		to top,
+		var(--composer-solid) 80%,
+		var(--composer-clear)
+	);
 }
 
 .editing-banner {
@@ -1154,9 +1334,9 @@ textarea:focus-visible {
 	width: min(100%, 760px);
 	margin: 0 auto 7px;
 	padding: 8px 9px 8px 12px;
-	color: #496657;
-	background: #eef4f0;
-	border: 1px solid #d7e3da;
+	color: var(--success-ink);
+	background: var(--success-soft);
+	border: 1px solid color-mix(in srgb, var(--moss) 26%, var(--line));
 	border-radius: 10px;
 }
 
@@ -1171,7 +1351,7 @@ textarea:focus-visible {
 }
 
 .editing-banner small {
-	color: #7d8c84;
+	color: var(--muted);
 	font-size: 8px;
 }
 
@@ -1181,7 +1361,7 @@ textarea:focus-visible {
 	width: 28px;
 	height: 28px;
 	padding: 0;
-	color: #75857c;
+	color: var(--muted);
 	background: transparent;
 	border: 0;
 	border-radius: 7px;
@@ -1189,7 +1369,7 @@ textarea:focus-visible {
 }
 
 .editing-banner button:hover {
-	background: #fff;
+	background: var(--surface-raised);
 }
 
 .composer {
@@ -1199,15 +1379,15 @@ textarea:focus-visible {
 	width: min(100%, 760px);
 	margin: auto;
 	padding: 9px 9px 9px 15px;
-	background: #fff;
-	border: 1px solid #dce2dd;
+	background: var(--surface-raised);
+	border: 1px solid var(--line);
 	border-radius: 14px;
 	box-shadow: 0 12px 35px rgb(30 48 40 / 8%);
 	transition: border-color 150ms ease;
 }
 
 .composer:focus-within {
-	border-color: #9db8a8;
+	border-color: color-mix(in srgb, var(--moss) 56%, var(--line));
 }
 
 .composer textarea {
@@ -1229,7 +1409,7 @@ textarea:focus-visible {
 }
 
 .composer textarea::placeholder {
-	color: #a3aaa6;
+	color: var(--faint);
 }
 
 .send-button {
@@ -1238,7 +1418,7 @@ textarea:focus-visible {
 	flex: 0 0 auto;
 	width: 34px;
 	height: 34px;
-	color: #fff;
+	color: var(--on-accent);
 	background: var(--moss);
 	border: 0;
 	border-radius: 10px;
@@ -1250,12 +1430,12 @@ textarea:focus-visible {
 }
 
 .send-button:disabled {
-	background: #cbd3ce;
+	background: var(--disabled);
 	cursor: not-allowed;
 }
 
 .send-button.stop {
-	background: #7d5c53;
+	background: var(--stop);
 }
 
 .composer-note {
@@ -1264,7 +1444,7 @@ textarea:focus-visible {
 	justify-content: center;
 	gap: 5px;
 	margin: 8px 0 0;
-	color: #a0a7a3;
+	color: var(--faint);
 	font-size: 8px;
 }
 
@@ -1290,9 +1470,9 @@ textarea:focus-visible {
 	width: min(100%, 760px);
 	margin: 0 auto 8px;
 	padding: 7px;
-	color: #9b594d;
-	background: #fff2ef;
-	border: 1px solid #f0dad5;
+	color: var(--danger-ink);
+	background: var(--danger-soft);
+	border: 1px solid color-mix(in srgb, var(--danger-ink) 32%, var(--line));
 	border-radius: 8px;
 	font-size: 9px;
 }
@@ -1305,23 +1485,23 @@ textarea:focus-visible {
 	width: min(100%, 760px);
 	margin: 0 auto 8px;
 	padding: 7px 9px;
-	color: #536d60;
-	background: #eef5f0;
-	border: 1px solid #d7e6dc;
+	color: var(--success-ink);
+	background: var(--success-soft);
+	border: 1px solid color-mix(in srgb, var(--success-ink) 28%, var(--line));
 	border-radius: 9px;
 	font-size: 9px;
 }
 
 .rollback-banner.warning {
-	color: #89643f;
-	background: #fff8ed;
-	border-color: #f0dfc5;
+	color: var(--warning-ink);
+	background: var(--warning-soft);
+	border-color: color-mix(in srgb, var(--warning-ink) 32%, var(--line));
 }
 
 .rollback-banner.error {
-	color: #9b594d;
-	background: #fff2ef;
-	border-color: #f0dad5;
+	color: var(--danger-ink);
+	background: var(--danger-soft);
+	border-color: color-mix(in srgb, var(--danger-ink) 32%, var(--line));
 }
 
 .rollback-banner > button {
@@ -1339,7 +1519,7 @@ textarea:focus-visible {
 	min-width: 0;
 	height: 100dvh;
 	overflow: hidden;
-	background: #f7f8f6;
+	background: var(--surface-subtle);
 	border-left: 1px solid var(--line);
 }
 
@@ -1353,14 +1533,14 @@ textarea:focus-visible {
 	justify-content: space-between;
 	height: 74px;
 	padding: 0 22px;
-	background: rgb(247 248 246 / 88%);
+	background: color-mix(in srgb, var(--surface-subtle) 88%, transparent);
 	border-bottom: 1px solid var(--line);
 }
 
 .insights-header > div > span {
 	display: block;
 	margin-bottom: 4px;
-	color: #91a097;
+	color: var(--faint);
 	font-size: 7px;
 	font-weight: 800;
 	letter-spacing: 1.5px;
@@ -1388,8 +1568,8 @@ textarea:focus-visible {
 	align-items: center;
 	gap: 4px;
 	padding: 5px 7px;
-	color: #758078;
-	background: #ecefec;
+	color: var(--muted);
+	background: var(--surface-muted);
 	border-radius: 6px;
 	font-size: 8px;
 }
@@ -1412,8 +1592,8 @@ textarea:focus-visible {
 	align-items: center;
 	gap: 16px;
 	padding: 16px;
-	background: #fff;
-	border: 1px solid #e1e6e1;
+	background: var(--surface-raised);
+	border: 1px solid var(--line);
 	border-radius: 13px;
 	box-shadow: 0 9px 28px rgb(32 52 44 / 4%);
 }
@@ -1424,7 +1604,7 @@ textarea:focus-visible {
 	flex: 0 0 auto;
 	width: 70px;
 	height: 70px;
-	background: conic-gradient(var(--moss) var(--progress), #e7ece8 0deg);
+	background: conic-gradient(var(--moss) var(--progress), var(--ring-track) 0deg);
 	border-radius: 50%;
 }
 
@@ -1432,7 +1612,7 @@ textarea:focus-visible {
 	grid-area: 1 / 1;
 	width: 58px;
 	height: 58px;
-	background: #fff;
+	background: var(--surface-raised);
 	border-radius: 50%;
 	content: "";
 }
@@ -1452,7 +1632,7 @@ textarea:focus-visible {
 }
 
 .progress-ring small {
-	color: #969e99;
+	color: var(--faint);
 	font-size: 7px;
 }
 
@@ -1461,7 +1641,7 @@ textarea:focus-visible {
 }
 
 .progress-copy > span {
-	color: #929a95;
+	color: var(--faint);
 	font-size: 8px;
 	font-weight: 650;
 }
@@ -1479,7 +1659,7 @@ textarea:focus-visible {
 
 .progress-copy p {
 	margin: 0;
-	color: #8a938e;
+	color: var(--faint);
 	font-size: 8px;
 }
 
@@ -1503,7 +1683,7 @@ textarea:focus-visible {
 }
 
 .section-heading svg {
-	color: #718079;
+	color: var(--muted);
 }
 
 .section-heading h3 {
@@ -1519,8 +1699,8 @@ textarea:focus-visible {
 	min-width: 19px;
 	height: 19px;
 	padding: 0 5px;
-	color: #75817a;
-	background: #e9ede9;
+	color: var(--muted);
+	background: var(--surface-muted);
 	border-radius: 6px;
 	font-size: 8px;
 	font-weight: 700;
@@ -1543,8 +1723,8 @@ textarea:focus-visible {
 	align-items: center;
 	gap: 10px;
 	padding: 9px 10px;
-	background: #fff;
-	border: 1px solid #e5e8e4;
+	background: var(--surface-raised);
+	border: 1px solid var(--line);
 	border-radius: 9px;
 }
 
@@ -1553,15 +1733,15 @@ textarea:focus-visible {
 	place-items: center;
 	width: 24px;
 	height: 24px;
-	color: #718078;
-	background: #edf0ed;
+	color: var(--muted);
+	background: var(--surface-muted);
 	border-radius: 7px;
 	font-family: Georgia, serif;
 	font-size: 9px;
 }
 
 .milestone-row > span.done {
-	color: #fff;
+	color: var(--on-accent);
 	background: var(--moss);
 }
 
@@ -1582,7 +1762,7 @@ textarea:focus-visible {
 .milestone-meta > div {
 	height: 3px;
 	overflow: hidden;
-	background: #ebeeeb;
+	background: var(--surface-muted);
 	border-radius: 99px;
 }
 
@@ -1594,7 +1774,7 @@ textarea:focus-visible {
 }
 
 .milestone-meta small {
-	color: #919994;
+	color: var(--faint);
 	font-size: 7px;
 }
 
@@ -1604,7 +1784,7 @@ textarea:focus-visible {
 
 .task-order-note {
 	margin: -5px 0 8px 22px;
-	color: #929b96;
+	color: var(--faint);
 	font-size: 7px;
 }
 
@@ -1624,14 +1804,14 @@ textarea:focus-visible {
 }
 
 .task-order {
-	color: #9aa49e;
+	color: var(--faint);
 	font-family: var(--font-geist-mono), ui-monospace, monospace;
 	font-size: 7px;
 	font-variant-numeric: tabular-nums;
 }
 
 .task-row:hover {
-	background: #fff;
+	background: var(--surface-raised);
 }
 
 .task-check {
@@ -1644,7 +1824,7 @@ textarea:focus-visible {
 }
 
 .task-row.done {
-	color: #89928d;
+	color: var(--faint);
 	cursor: default;
 	opacity: 0.72;
 }
@@ -1654,7 +1834,7 @@ textarea:focus-visible {
 }
 
 .task-row.done .task-check {
-	color: #fff;
+	color: var(--on-accent);
 	background: var(--moss);
 	border-color: var(--moss);
 }
@@ -1677,7 +1857,7 @@ textarea:focus-visible {
 }
 
 .task-list-scroll::-webkit-scrollbar-thumb {
-	background: #d5ddd7;
+	background: var(--scrollbar);
 	border-radius: 99px;
 }
 
@@ -1711,12 +1891,12 @@ textarea:focus-visible {
 	display: flex;
 	align-items: center;
 	gap: 4px;
-	color: #969e99;
+	color: var(--faint);
 	font-size: 7px;
 }
 
 .task-row > svg {
-	color: #adb4b0;
+	color: var(--faint);
 }
 
 .activity-list {
@@ -1734,14 +1914,14 @@ textarea:focus-visible {
 	place-items: center;
 	width: 23px;
 	height: 23px;
-	color: #637c6e;
-	background: #e8eeea;
+	color: var(--moss);
+	background: var(--moss-soft);
 	border-radius: 7px;
 }
 
 .activity-icon.checkin {
-	color: #9a663c;
-	background: #f7ebdf;
+	color: var(--warning-ink);
+	background: var(--warning-soft);
 }
 
 .activity-row p {
@@ -1751,7 +1931,7 @@ textarea:focus-visible {
 }
 
 .activity-row small {
-	color: #a0a7a3;
+	color: var(--faint);
 	font-size: 7px;
 }
 
@@ -1760,9 +1940,9 @@ textarea:focus-visible {
 	align-items: center;
 	gap: 9px;
 	padding: 13px;
-	color: #949d98;
-	background: #fbfcfb;
-	border: 1px dashed #dfe4df;
+	color: var(--faint);
+	background: var(--surface-subtle);
+	border: 1px dashed var(--line);
 	border-radius: 9px;
 }
 
@@ -1780,8 +1960,8 @@ textarea:focus-visible {
 	margin-top: 24px;
 	padding: 10px;
 	color: var(--ink);
-	background: #edf2ee;
-	border: 1px solid #dae4dc;
+	background: var(--moss-soft);
+	border: 1px solid color-mix(in srgb, var(--moss) 26%, var(--line));
 	border-radius: 11px;
 	text-align: left;
 	cursor: pointer;
@@ -1792,7 +1972,7 @@ textarea:focus-visible {
 	place-items: center;
 	width: 34px;
 	height: 34px;
-	color: #fff;
+	color: var(--on-accent);
 	background: var(--moss);
 	border-radius: 9px;
 }
@@ -1808,12 +1988,12 @@ textarea:focus-visible {
 }
 
 .checkin-button small {
-	color: #7e8982;
+	color: var(--muted);
 	font-size: 7px;
 }
 
 .checkin-button > svg {
-	color: #87918b;
+	color: var(--muted);
 }
 
 .mobile-only {

@@ -23,6 +23,8 @@ import {
 	LockKeyhole,
 	MessageSquareText,
 	Milestone as MilestoneIcon,
+	Monitor,
+	Moon,
 	PanelRightClose,
 	PanelRightOpen,
 	Pencil,
@@ -32,6 +34,7 @@ import {
 	ShieldCheck,
 	Sparkles,
 	Square,
+	Sun,
 	Target,
 	Undo2,
 	WifiOff,
@@ -58,6 +61,14 @@ import {
 	type WorkspaceState,
 } from "@/lib/workspace";
 import { resizeTextarea } from "@/lib/textarea";
+import {
+	isThemePreference,
+	resolveTheme,
+	THEME_STORAGE_KEY,
+	themeAttribute,
+	type ResolvedTheme,
+	type ThemePreference,
+} from "@/lib/theme";
 import {
 	CURRENT_WORKSPACE_KEY,
 	initializeWorkspaceDirectory,
@@ -148,11 +159,72 @@ function LoadingScreen() {
 	);
 }
 
+function ThemePicker({
+	preference,
+	resolvedTheme,
+	onChange,
+}: {
+	preference: ThemePreference;
+	resolvedTheme: ResolvedTheme;
+	onChange: (preference: ThemePreference) => void;
+}) {
+	const detailsRef = useRef<HTMLDetailsElement>(null);
+	const options: Array<{
+		value: ThemePreference;
+		label: string;
+		icon: typeof Sun;
+	}> = [
+		{ value: "system", label: "跟随系统", icon: Monitor },
+		{ value: "light", label: "白天模式", icon: Sun },
+		{ value: "dark", label: "黑夜模式", icon: Moon },
+	];
+	const CurrentIcon =
+		preference === "system" ? Monitor : resolvedTheme === "dark" ? Moon : Sun;
+	const currentLabel = options.find((option) => option.value === preference)?.label;
+
+	return (
+		<details className="theme-picker" ref={detailsRef}>
+			<summary
+				className="icon-button"
+				aria-label={`主题：${currentLabel}`}
+				title={`主题：${currentLabel}`}
+			>
+				<CurrentIcon size={17} />
+			</summary>
+			<div className="theme-menu" role="menu" aria-label="选择显示主题">
+				{options.map((option) => {
+					const Icon = option.icon;
+					return (
+						<button
+							key={option.value}
+							type="button"
+							role="menuitemradio"
+							aria-checked={preference === option.value}
+							className={preference === option.value ? "active" : ""}
+							onClick={() => {
+								onChange(option.value);
+								detailsRef.current?.removeAttribute("open");
+							}}
+						>
+							<Icon size={15} />
+							<span>{option.label}</span>
+							{preference === option.value && <Check size={13} />}
+						</button>
+					);
+				})}
+			</div>
+		</details>
+	);
+}
+
 export function NorthstarApp() {
 	const [workspaceId, setWorkspaceId] = useState<string | null>(null);
 	const [workspaceDirectory, setWorkspaceDirectory] = useState<WorkspaceEntry[]>(
 		[],
 	);
+	const [themePreference, setThemePreference] =
+		useState<ThemePreference>("system");
+	const [systemPrefersDark, setSystemPrefersDark] = useState(false);
 
 	useEffect(() => {
 		const session = initializeWorkspaceDirectory(
@@ -165,6 +237,33 @@ export function NorthstarApp() {
 		setWorkspaceDirectory(session.directory);
 		setWorkspaceId(session.currentId);
 	}, []);
+
+	useEffect(() => {
+		const media = window.matchMedia("(prefers-color-scheme: dark)");
+		const stored = window.localStorage.getItem(THEME_STORAGE_KEY);
+		// The server cannot inspect browser preferences or local storage.
+		// eslint-disable-next-line react-hooks/set-state-in-effect
+		setThemePreference(isThemePreference(stored) ? stored : "system");
+		setSystemPrefersDark(media.matches);
+		const handleSystemThemeChange = (event: MediaQueryListEvent) => {
+			setSystemPrefersDark(event.matches);
+		};
+		media.addEventListener("change", handleSystemThemeChange);
+		return () => media.removeEventListener("change", handleSystemThemeChange);
+	}, []);
+
+	const changeTheme = useCallback((preference: ThemePreference) => {
+		const attribute = themeAttribute(preference);
+		if (attribute) {
+			document.documentElement.dataset.theme = attribute;
+		} else {
+			delete document.documentElement.dataset.theme;
+		}
+		window.localStorage.setItem(THEME_STORAGE_KEY, preference);
+		setThemePreference(preference);
+	}, []);
+
+	const resolvedTheme = resolveTheme(themePreference, systemPrefersDark);
 
 	const selectWorkspace = useCallback((nextId: string) => {
 		setWorkspaceDirectory((current) => {
@@ -199,9 +298,12 @@ export function NorthstarApp() {
 			key={workspaceId}
 			workspaceId={workspaceId}
 			workspaceDirectory={workspaceDirectory}
+			themePreference={themePreference}
+			resolvedTheme={resolvedTheme}
 			onCreateWorkspace={createWorkspace}
 			onSelectWorkspace={selectWorkspace}
 			onWorkspaceTitle={rememberWorkspaceTitle}
+			onThemeChange={changeTheme}
 		/>
 	);
 }
@@ -209,15 +311,21 @@ export function NorthstarApp() {
 function ConnectedWorkspace({
 	workspaceId,
 	workspaceDirectory,
+	themePreference,
+	resolvedTheme,
 	onCreateWorkspace,
 	onSelectWorkspace,
 	onWorkspaceTitle,
+	onThemeChange,
 }: {
 	workspaceId: string;
 	workspaceDirectory: WorkspaceEntry[];
+	themePreference: ThemePreference;
+	resolvedTheme: ResolvedTheme;
 	onCreateWorkspace: () => void;
 	onSelectWorkspace: (id: string) => void;
 	onWorkspaceTitle: (id: string, title: string) => void;
+	onThemeChange: (preference: ThemePreference) => void;
 }) {
 	const [workspace, setWorkspace] = useState<WorkspaceState>(EMPTY_WORKSPACE);
 	const [composer, setComposer] = useState("");
@@ -662,6 +770,11 @@ function ConnectedWorkspace({
 						</div>
 					</div>
 					<div className="header-actions">
+						<ThemePicker
+							preference={themePreference}
+							resolvedTheme={resolvedTheme}
+							onChange={onThemeChange}
+						/>
 						<button
 							className="icon-button"
 							onClick={handleClearHistory}
