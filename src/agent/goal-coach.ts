@@ -19,6 +19,7 @@ import {
 import {
 	addTask,
 	assertValidWorkspace,
+	deleteTask,
 	EMPTY_WORKSPACE,
 	moveTask,
 	recordCheckIn,
@@ -47,6 +48,19 @@ const taskPlacementSchema = z
 	.describe(
 		"任务在所属里程碑中的建议位置。before/after 必须引用同一里程碑的任务。",
 	);
+
+const directTaskUpdatesSchema = z
+	.object({
+		title: z.string().trim().min(2).max(100).optional(),
+		status: taskStatus.optional(),
+		priority: priority.optional(),
+		effortMinutes: z.number().int().min(5).max(1440).optional(),
+		dueDate: nullableDate,
+	})
+	.strict()
+	.refine((updates) => Object.values(updates).some((value) => value !== undefined), {
+		message: "至少需要修改一个任务字段",
+	});
 
 const planSchema = z.object({
 	goal: z.object({
@@ -156,6 +170,50 @@ export class GoalCoachV2 extends AIChatAgent<Cloudflare.Env, WorkspaceState> {
 				LIMIT 160
 			)
 		`);
+	}
+
+	private applyDirectWorkspaceChange(nextState: WorkspaceState): void {
+		// Direct UI mutations are not part of a chat branch. Keeping older chat
+		// snapshots would let a later message retraction overwrite a newer manual edit.
+		this.ctx.storage.sql.exec("DELETE FROM workspace_checkpoints");
+		this.setState(nextState);
+	}
+
+	@callable()
+	updateTaskFromClient(taskId: string, rawUpdates: unknown): {
+		ok: true;
+		task: WorkspaceState["tasks"][number];
+	} {
+		const id = z.string().uuid().parse(taskId);
+		const updates = directTaskUpdatesSchema.parse(rawUpdates);
+		const nextState = updateTask(this.state, id, updates);
+		const task = nextState.tasks.find((candidate) => candidate.id === id);
+		if (!task) throw new Error("更新任务后无法读取任务");
+		this.applyDirectWorkspaceChange(nextState);
+		return { ok: true, task };
+	}
+
+	@callable()
+	moveTaskFromClient(taskId: string, rawPlacement: unknown): {
+		ok: true;
+		position: number;
+	} {
+		const id = z.string().uuid().parse(taskId);
+		const placement = taskPlacementSchema.parse(rawPlacement);
+		const nextState = moveTask(this.state, id, placement);
+		this.applyDirectWorkspaceChange(nextState);
+		return {
+			ok: true,
+			position: nextState.tasks.findIndex((task) => task.id === id) + 1,
+		};
+	}
+
+	@callable()
+	deleteTaskFromClient(taskId: string): { ok: true; taskId: string } {
+		const id = z.string().uuid().parse(taskId);
+		const nextState = deleteTask(this.state, id);
+		this.applyDirectWorkspaceChange(nextState);
+		return { ok: true, taskId: id };
 	}
 
 	@callable()
@@ -413,12 +471,13 @@ export class GoalCoachV2 extends AIChatAgent<Cloudflare.Env, WorkspaceState> {
 				},
 			}),
 			update_task: tool({
-				description: "更新任务标题、状态、优先级或截止日期。",
+				description: "更新任务标题、状态、优先级、预计工时或截止日期。",
 				inputSchema: z.object({
 					taskId: z.string().uuid(),
 					title: z.string().min(2).max(100).optional(),
 					status: taskStatus.optional(),
 					priority: priority.optional(),
+					effortMinutes: z.number().int().min(5).max(1440).optional(),
 					dueDate: nullableDate,
 				}),
 				execute: ({ taskId, ...updates }) => {
@@ -431,6 +490,19 @@ export class GoalCoachV2 extends AIChatAgent<Cloudflare.Env, WorkspaceState> {
 						ok: true,
 						task: nextState.tasks.find((task) => task.id === taskId),
 					};
+				},
+			}),
+			delete_task: tool({
+				description:
+					"永久删除一个不再需要的任务。只有用户明确要求删除时使用。",
+				inputSchema: z.object({
+					taskId: z.string().uuid(),
+					reason: z.string().min(2).max(160),
+				}),
+				execute: ({ taskId }) => {
+					const nextState = deleteTask(this.state, taskId);
+					this.setState(nextState);
+					return { ok: true, taskId };
 				},
 			}),
 			record_checkin: tool({
@@ -473,6 +545,7 @@ export class GoalCoachV2 extends AIChatAgent<Cloudflare.Env, WorkspaceState> {
 				replace_plan: () =>
 					this.state.goal === null ? "approved" : "user-approval",
 				reset_workspace: "user-approval",
+				delete_task: "user-approval",
 			},
 			stopWhen: isStepCount(8),
 			abortSignal: options?.abortSignal,

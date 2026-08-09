@@ -88,6 +88,10 @@ export interface SplitTaskDraft {
 	dueDate?: string | null;
 }
 
+export type TaskUpdates = Partial<
+	Pick<Task, "title" | "status" | "priority" | "effortMinutes" | "dueDate">
+>;
+
 export const EMPTY_WORKSPACE: WorkspaceState = {
 	version: 1,
 	goal: null,
@@ -319,7 +323,7 @@ function findEmptyMilestoneInsertionIndex(
 export function updateTask(
 	state: WorkspaceState,
 	taskId: string,
-	updates: Partial<Pick<Task, "title" | "status" | "priority" | "dueDate">>,
+	updates: TaskUpdates,
 ): WorkspaceState {
 	const current = state.tasks.find((task) => task.id === taskId);
 	if (!current) throw new Error("没有找到指定任务");
@@ -332,6 +336,23 @@ export function updateTask(
 		{ ...state, tasks },
 		"task",
 		`${action}：${updates.title ?? current.title}`,
+	);
+}
+
+export function deleteTask(
+	state: WorkspaceState,
+	taskId: string,
+): WorkspaceState {
+	const current = state.tasks.find((task) => task.id === taskId);
+	if (!current) throw new Error("没有找到指定任务");
+
+	return addActivity(
+		{
+			...state,
+			tasks: state.tasks.filter((task) => task.id !== taskId),
+		},
+		"task",
+		`删除任务：${current.title}`,
 	);
 }
 

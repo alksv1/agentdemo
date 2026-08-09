@@ -3,6 +3,7 @@ import {
 	addTask,
 	assertValidWorkspace,
 	calculateProgress,
+	deleteTask,
 	EMPTY_WORKSPACE,
 	moveTask,
 	replacePlan,
@@ -84,6 +85,24 @@ describe("workspace domain", () => {
 		expect(planned.tasks).toHaveLength(2);
 		expect(updated.tasks).toHaveLength(3);
 		expect(updated.activity[0].message).toContain("邀请第一位访谈对象");
+	});
+
+	it("updates task effort and supports explicit deletion", () => {
+		const planned = replacePlan(EMPTY_WORKSPACE, draft);
+		const updated = updateTask(planned, planned.tasks[0].id, {
+			title: "整理潜在访谈名单",
+			status: "doing",
+			effortMinutes: 45,
+		});
+		const deleted = deleteTask(updated, updated.tasks[0].id);
+
+		expect(updated.tasks[0]).toMatchObject({
+			title: "整理潜在访谈名单",
+			status: "doing",
+			effortMinutes: 45,
+		});
+		expect(deleted.tasks).toHaveLength(planned.tasks.length - 1);
+		expect(deleted.activity[0].message).toContain("删除任务");
 	});
 
 	it("inserts a new task at its deliberate position", () => {

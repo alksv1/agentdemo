@@ -8,6 +8,7 @@ import {
 } from "@cloudflare/ai-chat/react";
 import {
 	ArrowUp,
+	ArrowDown,
 	CalendarDays,
 	Check,
 	CheckCircle2,
@@ -36,6 +37,7 @@ import {
 	Square,
 	Sun,
 	Target,
+	Trash2,
 	Undo2,
 	WifiOff,
 	X,
@@ -58,6 +60,8 @@ import {
 	EMPTY_WORKSPACE,
 	type Activity,
 	type Task,
+	type TaskPlacement,
+	type TaskUpdates,
 	type WorkspaceState,
 } from "@/lib/workspace";
 import { resizeTextarea } from "@/lib/textarea";
@@ -90,6 +94,7 @@ type RollbackNotice = {
 	tone: "success" | "warning" | "error";
 	message: string;
 };
+type DirectTaskActionResult = { ok: true };
 
 const STARTERS = [
 	"我想在 12 周内上线一个个人产品",
@@ -106,6 +111,7 @@ const TOOL_LABELS: Record<string, string> = {
 	move_task: "调整任务顺序",
 	split_task: "拆分任务",
 	update_task: "更新任务",
+	delete_task: "删除任务",
 	record_checkin: "记录进度复盘",
 	reset_workspace: "重置工作区",
 };
@@ -468,7 +474,7 @@ function ConnectedWorkspace({
 				setRollbackNotice({
 					tone: "warning",
 					message:
-						"对话与模型上下文已删除，但这条旧消息早于回退功能，无法自动恢复当时的工作区。",
+						"对话与模型上下文已删除，但没有可安全使用的工作区快照；可能在此后进行过手动编辑，因此工作区保持现状。",
 				});
 				return;
 			}
@@ -611,6 +617,39 @@ function ConnectedWorkspace({
 		setWorkspaceMenuOpen(false);
 		onSelectWorkspace(nextId);
 	};
+
+	const updateTaskDirectly = useCallback(
+		async (taskId: string, updates: TaskUpdates): Promise<void> => {
+			await agent.call<DirectTaskActionResult>(
+				"updateTaskFromClient",
+				[taskId, updates],
+				{ timeout: 10_000 },
+			);
+		},
+		[agent],
+	);
+
+	const moveTaskDirectly = useCallback(
+		async (taskId: string, placement: TaskPlacement): Promise<void> => {
+			await agent.call<DirectTaskActionResult>(
+				"moveTaskFromClient",
+				[taskId, placement],
+				{ timeout: 10_000 },
+			);
+		},
+		[agent],
+	);
+
+	const deleteTaskDirectly = useCallback(
+		async (taskId: string): Promise<void> => {
+			await agent.call<DirectTaskActionResult>(
+				"deleteTaskFromClient",
+				[taskId],
+				{ timeout: 10_000 },
+			);
+		},
+		[agent],
+	);
 
 	return (
 		<main
@@ -944,13 +983,14 @@ function ConnectedWorkspace({
 						completedTasks={completedTasks}
 						focusTarget={insightNavigation.target}
 						focusRequest={insightNavigation.request}
+						actionsDisabled={isBusy || Boolean(connectionError)}
 						onClose={() => navigateTo("conversation")}
-							onTaskAction={(task) =>
-								void submitText(`请将任务「${task.title}」标记为完成。`)
-							}
-							onCheckIn={() =>
-								void submitText("我想做一次简短进度复盘，请带我完成。")
-							}
+						onUpdateTask={updateTaskDirectly}
+						onMoveTask={moveTaskDirectly}
+						onDeleteTask={deleteTaskDirectly}
+						onCheckIn={() =>
+							void submitText("我想做一次简短进度复盘，请带我完成。")
+						}
 					/>
 				</>
 			)}
@@ -1154,6 +1194,7 @@ function summarizeToolInput(name: string, input: unknown): string {
 	}
 	if (name === "reset_workspace") return "清空目标、任务与复盘记录";
 	if (name === "get_current_time") return "核对当前日期、时间与时区";
+	if (name === "delete_task") return "删除指定任务";
 	if (name === "move_task") return "调整建议执行位置";
 	if (name === "split_task") {
 		return Array.isArray(value.parts)
@@ -1187,8 +1228,11 @@ function InsightsPanel({
 	completedTasks,
 	focusTarget,
 	focusRequest,
+	actionsDisabled,
 	onClose,
-	onTaskAction,
+	onUpdateTask,
+	onMoveTask,
+	onDeleteTask,
 	onCheckIn,
 }: {
 	workspace: WorkspaceState;
@@ -1196,8 +1240,11 @@ function InsightsPanel({
 	completedTasks: number;
 	focusTarget: "plan" | "activity";
 	focusRequest: number;
+	actionsDisabled: boolean;
 	onClose: () => void;
-	onTaskAction: (task: Task) => void;
+	onUpdateTask: (taskId: string, updates: TaskUpdates) => Promise<void>;
+	onMoveTask: (taskId: string, placement: TaskPlacement) => Promise<void>;
+	onDeleteTask: (taskId: string) => Promise<void>;
 	onCheckIn: () => void;
 }) {
 	const scrollRef = useRef<HTMLDivElement>(null);
@@ -1206,6 +1253,7 @@ function InsightsPanel({
 	const taskScrollerRef = useRef<HTMLDivElement>(null);
 	const taskLoadSentinelRef = useRef<HTMLDivElement>(null);
 	const [visibleTaskCount, setVisibleTaskCount] = useState(TASK_PAGE_SIZE);
+	const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
 	const milestoneProgress = useMemo(
 		() =>
 			workspace.milestones.map((milestone) => {
@@ -1220,6 +1268,25 @@ function InsightsPanel({
 	const orderedTasks = workspace.tasks;
 	const visibleTasks = orderedTasks.slice(0, visibleTaskCount);
 	const remainingTaskCount = orderedTasks.length - visibleTasks.length;
+	const selectedTask = selectedTaskId
+		? (orderedTasks.find((task) => task.id === selectedTaskId) ?? null)
+		: null;
+	const selectedTaskIndex = selectedTask
+		? orderedTasks.findIndex((task) => task.id === selectedTask.id)
+		: -1;
+	const previousTask =
+		selectedTask && selectedTaskIndex > 0
+			? [...orderedTasks]
+					.slice(0, selectedTaskIndex)
+					.reverse()
+					.find((task) => task.milestoneId === selectedTask.milestoneId)
+			: undefined;
+	const nextTask =
+		selectedTask && selectedTaskIndex >= 0
+			? orderedTasks
+					.slice(selectedTaskIndex + 1)
+					.find((task) => task.milestoneId === selectedTask.milestoneId)
+			: undefined;
 
 	useEffect(() => {
 		const root = taskScrollerRef.current;
@@ -1349,15 +1416,16 @@ function InsightsPanel({
 									<button
 										className={`task-row ${task.status === "done" ? "done" : ""}`}
 										key={task.id}
-										onClick={() => task.status !== "done" && onTaskAction(task)}
-										title={task.status === "done" ? "已完成" : "标记为完成"}
-										disabled={task.status === "done"}
+										onClick={() => setSelectedTaskId(task.id)}
+										title="编辑任务"
 									>
 										<span className="task-order" aria-hidden="true">
 											{String(index + 1).padStart(2, "0")}
 										</span>
-										<span className={`task-check priority-${task.priority}`}>
+										<span className={`task-check priority-${task.priority} status-${task.status}`}>
 											{task.status === "done" && <Check size={9} />}
+											{task.status === "doing" && <span className="task-doing-dot" />}
+											{task.status === "blocked" && <X size={8} />}
 										</span>
 										<div>
 											<strong>{task.title}</strong>
@@ -1422,7 +1490,196 @@ function InsightsPanel({
 					<ChevronRight size={16} />
 				</button>
 			</div>
+
+			{selectedTask && (
+				<TaskEditor
+					key={selectedTask.id}
+					task={selectedTask}
+					disabled={actionsDisabled}
+					canMoveUp={Boolean(previousTask)}
+					canMoveDown={Boolean(nextTask)}
+					onClose={() => setSelectedTaskId(null)}
+					onSave={(updates) => onUpdateTask(selectedTask.id, updates)}
+					onMoveUp={async () => {
+						if (!previousTask) return;
+						await onMoveTask(selectedTask.id, {
+							type: "before",
+							taskId: previousTask.id,
+						});
+					}}
+					onMoveDown={async () => {
+						if (!nextTask) return;
+						await onMoveTask(selectedTask.id, {
+							type: "after",
+							taskId: nextTask.id,
+						});
+					}}
+					onDelete={async () => {
+						await onDeleteTask(selectedTask.id);
+						setSelectedTaskId(null);
+					}}
+				/>
+			)}
 		</aside>
+	);
+}
+
+function TaskEditor({
+	task,
+	disabled,
+	canMoveUp,
+	canMoveDown,
+	onClose,
+	onSave,
+	onMoveUp,
+	onMoveDown,
+	onDelete,
+}: {
+	task: Task;
+	disabled: boolean;
+	canMoveUp: boolean;
+	canMoveDown: boolean;
+	onClose: () => void;
+	onSave: (updates: TaskUpdates) => Promise<void>;
+	onMoveUp: () => Promise<void>;
+	onMoveDown: () => Promise<void>;
+	onDelete: () => Promise<void>;
+}) {
+	const [title, setTitle] = useState(task.title);
+	const [status, setStatus] = useState(task.status);
+	const [priority, setPriority] = useState(task.priority);
+	const [effortMinutes, setEffortMinutes] = useState(String(task.effortMinutes));
+	const [dueDate, setDueDate] = useState(task.dueDate ?? "");
+	const [pendingAction, setPendingAction] = useState<
+		"save" | "move" | "delete" | null
+	>(null);
+	const [deletePending, setDeletePending] = useState(false);
+	const [error, setError] = useState("");
+	const parsedEffort = Number(effortMinutes);
+	const formValid =
+		title.trim().length >= 2 &&
+		Number.isInteger(parsedEffort) &&
+		parsedEffort >= 5 &&
+		parsedEffort <= 1440;
+	const busy = disabled || pendingAction !== null;
+
+	const runAction = async (
+		action: "save" | "move" | "delete",
+		operation: () => Promise<void>,
+	) => {
+		setPendingAction(action);
+		setError("");
+		try {
+			await operation();
+		} catch (caught) {
+			setError(caught instanceof Error ? caught.message : "操作失败，请稍后重试");
+		} finally {
+			setPendingAction(null);
+		}
+	};
+
+	const handleSubmit = (event: FormEvent) => {
+		event.preventDefault();
+		if (!formValid || busy) return;
+		void runAction("save", async () => {
+			await onSave({
+				title: title.trim(),
+				status,
+				priority,
+				effortMinutes: parsedEffort,
+				dueDate: dueDate || null,
+			});
+			onClose();
+		});
+	};
+
+	return (
+		<div className="task-editor-layer">
+			<form className="task-editor" onSubmit={handleSubmit}>
+				<header>
+					<div>
+						<span>EDIT ACTION</span>
+						<h3>编辑任务</h3>
+					</div>
+					<button type="button" className="icon-button" onClick={onClose} aria-label="关闭任务编辑" disabled={busy}>
+						<X size={16} />
+					</button>
+				</header>
+
+				<div className="task-editor-scroll">
+					<label className="task-editor-field">
+						<span>任务标题</span>
+						<input value={title} onChange={(event) => setTitle(event.target.value)} maxLength={100} disabled={busy} />
+					</label>
+
+					<div className="task-editor-grid">
+						<label className="task-editor-field">
+							<span>状态</span>
+							<select value={status} onChange={(event) => setStatus(event.target.value as Task["status"])} disabled={busy}>
+								<option value="todo">待开始</option>
+								<option value="doing">进行中</option>
+								<option value="blocked">受阻</option>
+								<option value="done">已完成</option>
+							</select>
+						</label>
+						<label className="task-editor-field">
+							<span>优先级</span>
+							<select value={priority} onChange={(event) => setPriority(event.target.value as Task["priority"])} disabled={busy}>
+								<option value="high">高</option>
+								<option value="medium">中</option>
+								<option value="low">低</option>
+							</select>
+						</label>
+					</div>
+
+					<div className="task-editor-grid">
+						<label className="task-editor-field">
+							<span>预计分钟</span>
+							<input type="number" min={5} max={1440} step={5} value={effortMinutes} onChange={(event) => setEffortMinutes(event.target.value)} disabled={busy} />
+						</label>
+						<label className="task-editor-field">
+							<span>截止日期</span>
+							<input type="date" value={dueDate} onChange={(event) => setDueDate(event.target.value)} disabled={busy} />
+						</label>
+					</div>
+
+					<div className="task-order-controls">
+						<div>
+							<strong>建议执行位置</strong>
+							<small>只调整展示顺序，不限制完成顺序</small>
+						</div>
+						<span>
+							<button type="button" onClick={() => void runAction("move", onMoveUp)} disabled={busy || !canMoveUp} title="向前移动">
+								<ArrowUp size={14} />
+							</button>
+							<button type="button" onClick={() => void runAction("move", onMoveDown)} disabled={busy || !canMoveDown} title="向后移动">
+								<ArrowDown size={14} />
+							</button>
+						</span>
+					</div>
+
+					{error && <p className="task-editor-error">{error}</p>}
+				</div>
+
+				<footer>
+					{deletePending ? (
+						<div className="task-delete-confirm">
+							<span>确定删除？</span>
+							<button type="button" onClick={() => void runAction("delete", onDelete)} disabled={busy}>确认</button>
+							<button type="button" onClick={() => setDeletePending(false)} disabled={busy}>取消</button>
+						</div>
+					) : (
+						<button type="button" className="task-delete-button" onClick={() => setDeletePending(true)} disabled={busy}>
+							<Trash2 size={14} /> 删除
+						</button>
+					)}
+					<button type="submit" className="task-save-button" disabled={busy || !formValid}>
+						{pendingAction === "save" ? <LoaderCircle className="spin" size={14} /> : <Check size={14} />}
+						保存修改
+					</button>
+				</footer>
+			</form>
+		</div>
 	);
 }
 
